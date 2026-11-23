@@ -349,14 +349,6 @@ window.budgetCheck=rows=>{
   if(!all.length)tasks.push({t:'وجود ردیف بودجه',m:'هیچ ردیفی ثبت نشده است.',sev:'error'});
   else FORMS.forEach(f=>{if(!(rows[f]||[]).length)tasks.push({t:'فرم '+f,m:`هیچ ردیفی در فرم ${f} ثبت نشده است.`,sev:'error'})});
   ruleResults(rows).filter(x=>x.rule.name!=='ثبت مقادیر غیرمنفی').forEach(x=>tasks.push({t:x.rule.name,m:x.msg,sev:x.sev}));
-  // حالت نمونه: روی فرم‌های اصلی، یک خطا و یک هشدار نمونه برای نمایش اعتبارسنجی اضافه می‌شود
-  if(rows===S.rows&&S.demoSeed){
-    const T1='سقف نسبت هزینه نیروی انسانی به کل هزینه‌ها',T2='حداقل درآمد خارج از گروه دانا';
-    const keep=tasks.filter(x=>x.t!==T1&&x.t!==T2);
-    keep.push({t:T1,m:'نسبت هزینه نیروی انسانی به کل هزینه‌ها باید حداکثر ۶۰٪ باشد. مقدار فعلی ۷۵٪',sev:'error',sample:true});
-    keep.push({t:T2,m:'حداقل درآمد خارج از گروه دانا ۶٬۰۰۰ میلیون ریال است. مقدار فعلی ۳٬۵۰۰ میلیون ریال',sev:'warning',sample:true});
-    tasks.length=0;keep.forEach(x=>tasks.push(x));
-  }
   return {tasks,errors:tasks.filter(x=>x.sev==='error').length,warnings:tasks.filter(x=>x.sev==='warning').length};
 };
 let SEND=null;
