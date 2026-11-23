@@ -9,7 +9,7 @@ const pcs=p=>p==null?'—':(p>0?'+':p<0?'−':'')+num(Math.round(Math.abs(p)*100
 
 /* ---------- وضعیت درخواست‌ها ---------- */
 const OTHER={'تیپاکس':'approved','اکتیران':'approved','مهان‌پوش':'approved','خوگر':'approved','تی‌هاب':'rejected','جابار':'rejected','تی‌نکست':'review','تی‌اکسپرس':'review','تی‌پی‌ایکس':'review','پرسیت':'review','ریشه':'review','زی‌بوم':'remaining','حلزون':'remaining','ایفا':'remaining'};
-function hstatus(c){if(c==='دانا'){const st=S.status;if(st==='تصویب‌شده')return 'approved';if(st==='بازگشت برای اصلاح')return 'rejected';if(st==='پیش‌نویس'||st==='تهیه در شرکت')return 'remaining';return 'review'}return OTHER[c]||'remaining'}
+function hstatus(c){const q=c!=='دانا'&&(S.hreqs||[]).find(x=>x.company===c);if(q)return q.status==='تصویب‌شده'?'approved':q.status==='بازگشت برای اصلاح'?'rejected':'review';if(c==='دانا'){const st=S.status;if(st==='تصویب‌شده')return 'approved';if(st==='بازگشت برای اصلاح')return 'rejected';if(st==='پیش‌نویس'||st==='تهیه در شرکت')return 'remaining';return 'review'}return OTHER[c]||'remaining'}
 const sentCos=()=>companies.filter(c=>hstatus(c)!=='remaining');
 
 /* ---------- داده فرضی قطعی ---------- */
@@ -24,7 +24,7 @@ function bud(c,y,f,n){
   if(r){base=months.map((_,m)=>Number(r.values[m])||0)}
   else{const sc=.5+rnd('sc'+c)*1.6,amt=150+rnd('amt'+f+n)*1800;base=months.map((_,m)=>Math.round(amt*sc*(.8+m*.04)*(1+(rnd(c+f+n+'b'+m)-.5)*.16)))}
   if(y===1406)return base;
-  return base.map((v,m)=>Math.round(v*G[y]*(1+(rnd(c+f+n+y+'y'+m)-.5)*.14)));
+  return base.map((v,m)=>Math.round(v*(G[y]||Math.max(.2,1-(1406-y)*.16))*(1+(rnd(c+f+n+y+'y'+m)-.5)*.14)));
 }
 function act(c,f,n){
   const b=bud(c,1406,f,n),k=c+f+n,bias=(rnd('ab'+k)-.5)*.3;let out=0;
@@ -58,7 +58,7 @@ function hDash(){
   const g={approved:[],rejected:[],review:[],remaining:[]};companies.forEach(c=>g[hstatus(c)].push(c));
   const total=companies.length;
   const cards=[['approved','درخواست تأییدشده','good','بودجه تصویب‌شده'],['rejected','درخواست ردشده','bad','برگشت‌خورده برای اصلاح'],['review','درخواست در حال بررسی','warn','در مسیر بررسی هلدینگ'],['remaining','شرکت‌های باقی‌مانده','','هنوز بودجه ارسال نکرده‌اند']];
-  return `${heading('نمای کلی هلدینگ','وضعیت درخواست‌های بودجه ۱۴۰۶ شرکت‌ها',`<button class="btn" onclick="go('companies')">مشاهده شرکت‌ها</button>`)}${note('وضعیت درخواست شرکت‌ها نمایشی است؛ فقط وضعیت شرکت دانا از درخواست‌های بودجه همین نمونه می‌آید.')}
+  return `${heading('نمای کلی هلدینگ','وضعیت درخواست‌های بودجه ۱۴۰۶ شرکت‌ها',`<button class="btn" onclick="go('workflow')">بررسی بودجه</button>`)}${note('وضعیت درخواست شرکت‌ها نمایشی است؛ فقط وضعیت شرکت دانا از درخواست‌های بودجه همین نمونه می‌آید.')}
   <div class="grid kpis">${cards.map(([k,t,b,s])=>`<div class="card kpi"><span class="muted">${t}</span><div class="value">${num(g[k].length)}</div><span class="small muted">${s} · از ${num(total)} شرکت</span><p class="small" style="margin:10px 0 0;color:#888;line-height:1.9">${g[k].length?g[k].map(esc).join(' · '):'—'}</p></div>`).join('')}</div>
   <div class="card"><div class="cardhead"><div><h2>پیشرفت دریافت بودجه ۱۴۰۶</h2><p>سهم هر وضعیت از کل شرکت‌های گروه</p></div></div>
   <div class="stack">${cards.map(([k],i)=>g[k].length?`<span class="s${i}" style="width:${g[k].length/total*100}%" title="${cards[i][1]}: ${num(g[k].length)}">${num(g[k].length)}</span>`:'').join('')}</div>

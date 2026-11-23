@@ -8,7 +8,7 @@ function notifs(){
   if(S.scope==='holding'){
     const rev=companies.filter(c=>HB.hstatus(c)==='review');
     const names=rev.length?rev:['تی‌نکست','تی‌اکسپرس'];
-    list.push({id:'h-req:'+names.join(','),tone:'warn',title:'درخواست بررسی بودجه',text:`شرکت‌های ${names.join('، ')} درخواست بررسی بودجه ۱۴۰۶ ارسال کرده‌اند.`,time:'امروز',action:['مشاهده شرکت‌ها','companies']});
+    list.push({id:'h-req:'+names.join(','),tone:'warn',title:'درخواست بررسی بودجه',text:`شرکت‌های ${names.join('، ')} درخواست بررسی بودجه ۱۴۰۶ ارسال کرده‌اند.`,time:'امروز',action:['بررسی بودجه','workflow']});
     const low=[...HB.sentCos()].sort((a,b)=>HB.rnd('lo'+a)-HB.rnd('lo'+b)).slice(0,3).map(c=>[c,Math.round(15+HB.rnd('sh'+c)*20)]);
     const lows=low.length?low:[['خوگر',24],['پرسیت',19]];
     list.push({id:'h-low:'+lows.map(x=>x.join('-')).join(','),tone:'bad',title:'درآمد محقق‌شده کمتر از پیش‌بینی',text:`درآمد محقق‌شده ۱۴۰۵ شرکت‌های ${lows.map(([c,p])=>`${c} (${num(p)}٪ کمتر)`).join('، ')} از پیش‌بینی بودجه کمتر است و نیاز به بررسی دارد.`,time:'دیروز',action:['تحلیل و مقایسه','variance']});

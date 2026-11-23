@@ -1,6 +1,6 @@
-// ماژول یکپارچه «تحلیل و مقایسه»: انتخاب موارد، مقایسه، تعدیل و ریزشدن علت اختلاف
+// ماژول یکپارچه «تحلیل و مقایسه»: انتخاب موارد، مقایسه، تعدیل و جزئیات مقایسه
 (function(){
-const YEARS=[1406,1405,1404,1403],QN=['بهار','تابستان','پاییز','زمستان'];
+const YEARS=[1406,1405,1404,1403,1402,1401],QN=['بهار','تابستان','پاییز','زمستان'];
 const YCOL={1406:'#d2ac67',1405:'#3f9a7e',1404:'#3a77b5',1403:'#8c8c8c'};
 const fa=n=>String(n).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
 const R=n=>num(Math.round(n));
@@ -17,7 +17,7 @@ const sentSub=()=>S.subs.find(x=>x.status!=='حذف‌شده'&&x.sentAt);
 
 /* ---------- داده ---------- */
 function companies(){return holding()?(cp.company==='همه'||!HB.sentCos().includes(cp.company)?HB.sentCos():[cp.company]):['دانا']}
-function typeNames(f){const s=new Set(HB.fieldNames(f));const sub=sentSub();if(sub)(sub.rows[f]||[]).forEach(r=>s.add(r.name));return [...s]}
+function typeNames(f){const sub=sentSub();if(sub&&(sub.rows[f]||[]).length)return sub.rows[f].map(r=>r.name);return [...new Set(HB.fieldNames(f))]}
 // داده یک مورد (سال و بودجه/عملکرد) برای یک شرکت
 function leaf(y,t,c){
   const map={},avail=Array(12).fill(false);let syn=false,has=false;
@@ -38,7 +38,7 @@ function leaf(y,t,c){
     if(d&&['درآمد','هزینه'].some(f=>(d[f]||[]).length)){
       ['درآمد','هزینه'].forEach(f=>(d[f]||[]).forEach(r=>{const k=f+'|'+r.name;map[k]=map[k]?map[k].map((v,m)=>v+(Number(r.values[m])||0)):r.values.map(v=>Number(v)||0);r.values.forEach((v,m)=>{if(v!=null)avail[m]=true})}));has=true;
     }else if(holding()||c!=='دانا'){
-      synth((f,n)=>y===1406?HB.act(c,f,n):HB.bud(c,y,f,n).map((v,m)=>Math.round(v*(1+(HB.rnd('av'+c+f+n+y+m)-.5)*.2))),y===1406?6:12);
+      synth((f,n)=>y===1406?HB.act(c,f,n):HB.bud(c,y,f,n).map((v,m)=>Math.round(v*(1+(HB.rnd('av'+c+f+n+y+m)-.5)*.2))),y===1405?8:12);
     }
   }
   return {map,avail,syn,has};
@@ -60,6 +60,7 @@ const sgn=f=>net()&&f==='هزینه'?-1:1;
 function incMonthly(map){const out=Array(12).fill(0);Object.entries(map).forEach(([k,v])=>{if(k.split('|')[0]==='درآمد')v.forEach((x,m)=>out[m]+=x)});return out}
 const f1=v=>num(Math.round(v*10)/10)+'٪';
 const sg1=v=>(v>0?'+':v<0?'−':'')+num(Math.abs(Math.round(v*10)/10));
+const UNIT=()=>isM()?'درصد':'میلیون ریال';
 const fmt=v=>v==null?'—':isM()?f1(v):R(v);
 // مقدار ماهانه معیار برای کلیدهای انتخاب‌شده از map
 function metricMonthly(map,pred){
@@ -99,6 +100,7 @@ function selectionCard(){
   <div class="filters" style="align-items:flex-end">
     <div class="field" style="margin:0"><label>سال</label><select onchange="cmpSet('py',Number(this.value))">${YEARS.filter(y=>cp.pt==='B'||y<=1405).map(y=>`<option value="${y}" ${cp.py===y?'selected':''}>${fa(y)}</option>`).join('')}</select></div>
     <div class="field" style="margin:0"><label>بودجه یا عملکرد</label><select onchange="cmpSet('pt',this.value)"><option value="B" ${cp.pt==='B'?'selected':''}>بودجه</option><option value="A" ${cp.pt==='A'?'selected':''}>عملکرد</option></select></div>
+    ${holding()?`<div class="field" style="margin:0"><label>شرکت</label><select onchange="cmpSet('company',this.value)">${opt(['همه',...HB.sentCos()],cp.company)}</select></div>`:''}
     <button class="btn" onclick="cmpAdd()">＋ افزودن به مقایسه</button>
   </div>
   ${cp.msg?`<p class="error">${esc(cp.msg)}</p>`:''}
@@ -106,7 +108,6 @@ function selectionCard(){
   <div class="filters" style="align-items:flex-end">
     <div class="field" style="margin:0"><label>چه چیزی مقایسه شود؟</label><select onchange="cmpSet('metric',this.value)">${['درآمد','هزینه','ترکیبی','حاشیه'].map(x=>`<option value="${x}" ${cp.metric===x?'selected':''}>${x==='ترکیبی'?'سود/زیان ناخالص':x==='حاشیه'?'حاشیه سود':x}</option>`).join('')}</select></div>
     <div class="field" style="margin:0"><label>دوره نمودار</label><select onchange="cmpSet('period',this.value)">${opt(['ماهانه','فصلی','نیم‌ساله','سالانه'],cp.period)}</select></div>
-    ${holding()?`<div class="field" style="margin:0"><label>شرکت</label><select onchange="cmpSet('company',this.value)">${opt(['همه',...HB.sentCos()],cp.company)}</select></div>`:''}
     <label class="small" style="display:flex;gap:6px;align-items:center;margin-bottom:10px"><input type="checkbox" ${cp.common?'checked':''} onchange="cmpSet('common',this.checked)"> فقط ماه‌های دارای داده در همه موارد</label>
   </div>
   <div class="filters" style="align-items:flex-end">
@@ -131,7 +132,7 @@ function resultCard(){
   const labels=plabels(cp.period),st=series.map(s=>P(s,cp.period));
   let lastIdx=labels.length-1;while(lastIdx>0&&st.every(a=>a[lastIdx]==null))lastIdx--;
   const L=labels.slice(0,lastIdx+1);
-  const chart=lineChart(L,keys.map((k,i)=>{const [y,t]=k.split(':'),it=datas[k];return {name:lbl(k)+(it.syn?' (نمونه)':'')+(cp.adj?' · تعدیل‌شده':''),data:st[i].slice(0,lastIdx+1),color:YCOL[y],dash:t==='B'}}));
+  const chart=lineChart(L,keys.map((k,i)=>{const [y,t]=k.split(':'),it=datas[k];return {name:lbl(k)+(it.syn?' (نمونه)':'')+(cp.adj?' · تعدیل‌شده':''),data:st[i].slice(0,lastIdx+1),color:YCOL[y],dash:t==='B'}}),{unit:UNIT(),title:'نتیجه مقایسه · '+(cp.metric==='ترکیبی'?'سود/زیان ناخالص':cp.metric==='حاشیه'?'حاشیه سود':cp.metric)});
   const tot=series.map(s=>{const v=s.mm.filter(x=>x!=null);if(!v.length)return null;if(!isM())return sum(v);const i=sum(s.im.filter(x=>x!=null));return i?sum(v)/i*100:null});
   const q=series.map(s=>P(s,'فصلی'));
   const b0=tot[0];
@@ -151,7 +152,7 @@ window.cmpDd=i=>{const r=DDROWS[i];if(!r)return;if(r.kind==='c'){cp.ddc=r.key;cp
 window.cmpBack=l=>{if(l<=0){cp.ddc=null;cp.ddn=null}else cp.ddn=null;save();render()};
 function drillCard(){
   const keys=cp.items.filter(k=>item(k).has);
-  if(keys.length<2)return `<div class="card" style="margin-top:18px"><h2>ریزشدن علت اختلاف</h2><div class="empty">برای ریزشدن، دست‌کم دو مورد دارای داده انتخاب کنید.</div></div>`;
+  if(keys.length<2)return `<div class="card" style="margin-top:18px"><h2>جزئیات مقایسه</h2><div class="empty">برای ریزشدن، دست‌کم دو مورد دارای داده انتخاب کنید.</div></div>`;
   if(!keys.includes(cp.base))cp.base=keys[0];if(!keys.includes(cp.cmpI)||cp.cmpI===cp.base)cp.cmpI=keys.find(k=>k!==cp.base);
   const A=cp.base,B=cp.cmpI,multi=holding()&&companies().length>1;
   const level=multi?(cp.ddc?(cp.ddn?2:1):0):(cp.ddn?2:1);
@@ -174,7 +175,7 @@ function drillCard(){
   const line=(label,a,b,f,btn)=>`<tr><td>${label}</td><td>${R(a)}</td><td>${R(b)}</td><td class="${good(f,b-a)?'t-good':'t-bad'}">${sg(b-a)}</td><td>${pcs(a?b/a-1:null)}</td><td>${badge(b-a,a,f)}</td><td>${btn||''}</td></tr>`;
   const lineM=(label,a,b,btn)=>{const d=a==null||b==null?null:b-a;return `<tr><td>${label}</td><td>${a==null?'—':f1(a)}</td><td>${b==null?'—':f1(b)}</td><td class="${d==null||d===0?'':d>0?'t-good':'t-bad'}">${d==null?'—':sg1(d)+' نقطه'}</td><td>—</td><td>${d==null||Math.abs(d)<1?'<span class="badge">بدون تغییر چشمگیر</span>':d>0?'<span class="badge good">مطلوب</span>':'<span class="badge bad">نامطلوب</span>'}</td><td>${btn||''}</td></tr>`};
   const marginSeries=(ml)=>{const ia=incOf(dA.map,fA),ib=incOf(dB.map,fB),na=sumM(dA.map,fA),nb=sumM(dB.map,fB);return [ml.map(m=>months[m]),ml.map(m=>ia[m]?na[m]/ia[m]*100:null),ml.map(m=>ib[m]?nb[m]/ib[m]*100:null)]};
-  let chartM=null,summary='';
+  let chartM=null,summary='',dtl=null;
   if(level===2){
     const kk=cp.ddn,f0=kk.split('|')[0];
     const va=sumM(dA.map,fA,k=>k===kk),vb=sumM(dB.map,fB,k=>k===kk);
@@ -190,6 +191,7 @@ function drillCard(){
     const va=sumM(dA.map,fA),vb=sumM(dB.map,fB),ml=months.map((_,m)=>m).filter(mOk);
     chartM=isM()?marginSeries(ml):[ml.map(m=>months[m]),ml.map(m=>va[m]),ml.map(m=>vb[m])];
     summary=rs.slice(0,3).filter(r=>r.a!==r.b).map(r=>`<span class="badge ${good(r.f,r.b-r.a)?'good':'bad'}">${esc(r.k.split('|')[1])}: ${sg(r.b-r.a)}</span>`).join(' ');
+    dtl=i=>{const m=ml[i];return {rows:rs.map(r=>{const x=sumM(dA.map,fA,z=>z===r.k)[m],y=sumM(dB.map,fB,z=>z===r.k)[m],d=y-x,p=x?d/Math.abs(x):null,g=good(r.f,d);return {f:r.f,name:r.k.split('|')[1],a:x,b:y,d,pct:p,ev:p!=null&&Math.abs(p)<.03?'بدون تغییر چشمگیر':g?'مطلوب':'نامطلوب',tone:p!=null&&Math.abs(p)<.03?'':g?'good':'bad'}}),names:[lbl(A),lbl(B)]}};
   }else{
     // سطح شرکت‌ها (هلدینگ)
     const rs=companies().map(c=>{const a=item(A,[c]),b=item(B,[c]);const m2=maskFor([A,B],{[A]:a,[B]:b});const ok=m=>m2?m2[m]:(a.avail[m]&&b.avail[m]);
@@ -201,16 +203,16 @@ function drillCard(){
     summary=rs.slice(0,3).filter(r=>r.a!==r.b).map(r=>isM()?`<span class="badge ${(r.b-r.a)>0?'good':'bad'}">${esc(r.c)}: ${sg1((r.b||0)-(r.a||0))} نقطه</span>`:`<span class="badge ${good(cp.metric==='هزینه'?'هزینه':'درآمد',r.b-r.a)?'good':'bad'}">${esc(r.c)}: ${sg(r.b-r.a)}</span>`).join(' ');
   }
   const pick=(id,cur,excl)=>`<select onchange="cmpSet('${id}',this.value)">${keys.filter(k=>k!==excl).map(k=>`<option value="${k}" ${k===cur?'selected':''}>${lbl(k)}</option>`).join('')}</select>`;
-  return `<div class="card" style="margin-top:18px"><h2>ریزشدن علت اختلاف</h2><p class="muted small">تفاوت = «مقایسه» − «مبنا». از بزرگ‌ترین اختلاف شروع کنید و روی «ریزشدن» بزنید تا مشخص شود مشکل از کجاست.</p>
+  return `<div class="card" style="margin-top:18px"><h2>جزئیات مقایسه</h2><p class="muted small">تفاوت = «مقایسه» − «مبنا». از بزرگ‌ترین اختلاف شروع کنید و روی «ریزشدن» بزنید تا مشخص شود مشکل از کجاست.</p>
   <div class="filters" style="align-items:flex-end"><div class="field" style="margin:0"><label>مبنا</label>${pick('base',A,B)}</div><div class="field" style="margin:0"><label>مقایسه</label>${pick('cmpI',B,A)}</div></div>
   ${crumb}${summary?`<div style="margin:8px 0"><span class="small muted">بیشترین اختلاف‌ها: </span>${summary}</div>`:''}
-  ${chartM&&chartM[0].length?lineChart(chartM[0],[{name:lbl(A),data:chartM[1],color:YCOL[A.split(':')[0]],dash:A.endsWith('B')},{name:lbl(B),data:chartM[2],color:'#b04a3b',dash:B.endsWith('B')}],{h:210}):''}
+  ${chartM&&chartM[0].length?lineChart(chartM[0],[{name:lbl(A),data:chartM[1],color:YCOL[A.split(':')[0]],dash:A.endsWith('B')},{name:lbl(B),data:chartM[2],color:'#b04a3b',dash:B.endsWith('B')}],{h:210,unit:UNIT(),title:'جزئیات مقایسه',detail:dtl||(i=>{const x=chartM[1][i],y=chartM[2][i],d=x==null||y==null?null:y-x,f0=level===2?cp.ddn.split('|')[0]:(cp.metric==='هزینه'?'هزینه':'درآمد'),pt=isM()&&level!==2,p=(!pt&&x)?d/x:null,ev=d==null?'—':(pt?Math.abs(d)<1:(p!=null&&Math.abs(p)<.03))?'بدون تغییر چشمگیر':good(f0,d)?'مطلوب':'نامطلوب';return {fields:[{name:lbl(A),value:x,color:'#8c8c8c'},{name:lbl(B),value:y,color:'#b04a3b'},{name:'تفاوت'+(pt?' (نقطه درصد)':''),value:d,color:d==null?'#999':good(f0,d)?'#27754c':'#b43d37'}],extra:[['درصد تغییر',p==null?'—':pcs(p)],['ارزیابی',ev]]}})}):''}
   <div class="tablewrap" style="margin-top:12px"><table>${tableHead}<tbody>${tableBody}</tbody></table></div></div>`;
 }
 
 window.cmpPage=()=>{
   if(!window.HB)return '<div class="empty">در حال بارگذاری…</div>';
-  return `${heading('تحلیل و مقایسه','مقایسه بودجه و عملکرد سال‌ها، تعدیل و ریزشدن علت اختلاف')}${selectionCard()}${cp.confirmed&&cp.items.length?resultCard()+drillCard():''}`;
+  return `${heading('تحلیل و مقایسه','مقایسه بودجه و عملکرد سال‌ها، تعدیل و جزئیات مقایسه')}${selectionCard()}${cp.confirmed&&cp.items.length?resultCard()+drillCard():''}`;
 };
 window.CMP={leaf};
 pages.variance=cmpPage;pages.compare=cmpPage;

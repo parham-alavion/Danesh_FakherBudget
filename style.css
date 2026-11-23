@@ -101,3 +101,24 @@
 
 .kunit{display:inline-block;margin-right:8px;padding:3px 10px;border-radius:20px;background:#fff;border:1px solid #e2d6b4;color:#8a6420;font-size:12px;font-weight:normal;vertical-align:middle}
 .actual .kunit{border-color:#b9ddcd;color:#2a7d58}
+
+.cunit{margin-right:auto;padding:2px 10px;border-radius:20px;background:#f4f1e8;color:#8a6420;font-size:12px}
+.hgrp td{background:#f6f2e7;border-top:2px solid #e6d9b5;padding:12px}
+
+/* زنجیره مراحل درخواست */
+.chain{display:flex;align-items:center;gap:6px;margin:16px 0;flex-wrap:wrap}
+.cstep{display:flex;align-items:center;gap:8px;padding:10px 14px;border-radius:12px;border:1.5px solid #e2e2e2;background:#f7f7f7;color:#999;font-size:13px}
+.cstep .cic{width:24px;height:24px;border-radius:50%;display:grid;place-items:center;background:#e6e6e6;color:#888;font-size:12px;flex:none}
+.cstep.done{background:#e7f5ed;border-color:#a8d5c3;color:#27754c}.cstep.done .cic{background:#27754c;color:#fff}
+.cstep.cur{background:#fff4da;border-color:#d2ac67;color:#7a5a16;box-shadow:0 0 0 3px #f6e7c0}.cstep.cur .cic{background:#d2ac67;color:#fff}
+.cstep.ret{background:#fcebea;border-color:#e8a8a2;color:#b43d37}.cstep.ret .cic{background:#b43d37;color:#fff}
+.carrow{color:#b0a283;font-size:20px;font-weight:bold}
+
+.fe{color:#b43d37;font-size:11px;margin-top:3px;min-height:0;text-align:center}
+.mgrid input.bad{border-color:#b43d37;background:#fdf1f0}
+.tot-line{margin:12px 0;padding:10px 14px;background:#fafafa;border-radius:8px;font-size:14px}
+
+.lcwrap{cursor:pointer;border-radius:10px;transition:background .15s}.lcwrap:hover{background:#fbf8f0}
+.lchint{font-size:11px;color:#9b7331;text-align:left;opacity:0;transition:opacity .15s}.lcwrap:hover .lchint{opacity:1}
+
+.lcwrap{cursor:default}.hit{cursor:pointer}.hit:hover{fill:#d2ac6726}

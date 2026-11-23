@@ -5,24 +5,32 @@ const fa=n=>String(n).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
 const R=n=>num(Math.round(n));
 const norm=s=>String(s==null?'':s).trim().replace(/ي/g,'ی').replace(/ك/g,'ک');
 const colL=i=>String.fromCharCode(65+i);
-const YEARS=[1403,1404,1405];
+const YEARS=[1405];
 const RC='نسبت هزینه نیروی انسانی به کل هزینه‌ها';
-(()=>{const l=S.companyRules&&S.companyRules['دانا'];if(!l)return;const i=l.findIndex(r=>r.name==='ثبت مقادیر غیرمنفی');const nr={name:'سقف نسبت هزینه نیروی انسانی به کل هزینه‌ها',type:'خطای مانع',category:RC,min:'',max:'60'};if(i>=0)l.splice(i,1,nr);else if(!l.some(r=>r.category===RC))l.push(nr);if(!S.rcErrMig){const x=l.find(r=>r.category===RC);if(x)x.type='خطای مانع';S.rcErrMig=true}save()})();
+(()=>{const l=S.companyRules&&S.companyRules['دانا'];if(!l)return;const i=l.findIndex(r=>r.name==='ثبت مقادیر غیرمنفی');const nr={name:'سقف نسبت هزینه نیروی انسانی به کل هزینه‌ها',type:'خطای مانع',category:RC,min:'',max:'60'};if(i>=0)l.splice(i,1,nr);else if(!l.some(r=>r.category===RC))l.push(nr);if(!S.rcErrMig){const x=l.find(r=>r.category===RC);if(x)x.type='خطای مانع';S.rcErrMig=true}if(!l.some(r=>r.category==='حقوق و مزایا'))l.push({name:'سقف هزینه حقوق و مزایای پرسنل',type:'خطای مانع',category:'حقوق و مزایا',min:'',max:'10000'});save()})();
 S.impLog=S.impLog||[];
 S.ay=Math.min(S.ay||1405,1405);S.af=S.af||'درآمد';S.actData=S.actData||{};
 const adata=y=>{const d=S.actData[y]=S.actData[y]||{};FORMS.forEach(f=>d[f]=d[f]||[]);return d};
 
 /* ---------- منوی گروه‌بندی‌شده ---------- */
-const GROUPS=[['general','کلی',['dashboard','companies','variance','intercompany']],['budget','بودجه',['budget','workflow','rules']],['actual','عملکرد محقق شده',['actual']]];
+const GROUPS=[['general','کلی',['dashboard','companies','variance','intercompany']],['budget','بودجه',['budget','drafts','workflow','rules']],['actual','عملکرد محقق شده',['actual','history','perf']]];
 window.navHtml=()=>{
   const by=k=>nav.find(x=>x[0]===k);
-  return GROUPS.map(([gk,t,ks])=>`<div class="navlabel" style="display:block">${t}</div>`+ks.filter(k=>by(k)&&(S.scope==='holding'||k!=='companies')).map(k=>{const n=by(k);return `<button class="${S.page===k?'active':''}" onclick="go('${k}')"><span>${n[1]}</span>${n[2]}</button>`}).join('')).join('');
+  return GROUPS.map(([gk,t,ks])=>`<div class="navlabel" style="display:block">${t}</div>`+ks.filter(k=>by(k)&&(S.scope==='holding'?!['budget','drafts','actual','history'].includes(k):!['companies','perf'].includes(k))).map(k=>{const n=by(k);return `<button class="${S.page===k?'active':''}" onclick="go('${k}')"><span>${n[1]}</span>${S.scope==='holding'&&k==='rules'?'قواعد بودجه‌ریزی شرکت‌ها':n[2]}</button>`}).join('')).join('');
 };
 
 /* ---------- نمونه اکسل ---------- */
 const SAMPLE=[['درآمد','درآمد خدمات به شرکت‌های گروه',[900,1100,1300,1400,1500,1600,1700,1800,1900,2000,2100,2200]],['درآمد','درآمد خدمات خارج از گروه',[250,300,400,450,500,550,600,650,700,750,800,850]],['هزینه','حقوق و مزایای پرسنل',Array(12).fill(650)],['هزینه','هزینه عمومی و اداری',Array(12).fill(180)],['هزینه','بهای تمام‌شده خدمات',Array(12).fill(200)],['نقدینگی','دریافت نقدی از مشتریان',Array(12).fill(900)],['نقدینگی','پرداخت نقدی حقوق و هزینه‌ها',Array(12).fill(650)]];
 const sampleAoa=()=>[['فرم','ردیف',...months],...SAMPLE.map(([f,n,v])=>[f,n,...v])];
-const sampleForm=f=>[['سرفصل','شرح',...months],...SAMPLE.filter(x=>x[0]===f).map(([_,n,v])=>[n,'نمونه',...v])];
+const SG_=' · درآمد خدمات به شرکت‌های گروه',SO_=' · درآمد خدمات خارج از گروه';
+const sampleForm=f=>f==='درآمد'
+  ?[['سرفصل','شرح','نوع درآمد',...months],
+    ['خدمات زیرساخت و سرور','قرارداد الف','به شرکت‌های گروه',1100,1150,1200,1250,1300,1350,1400,1450,1500,1550,1600,1650],
+    ['خدمات زیرساخت و سرور','قرارداد الف','خارج از گروه',350,380,400,420,450,480,500,520,550,580,600,620],
+    ['خدمات نرم‌افزار','پروژه ب','به شرکت‌های گروه',700,720,740,760,780,800,820,840,860,880,900,920],
+    ['خدمات نرم‌افزار','پروژه ب','خارج از گروه',250,270,290,310,330,350,370,390,410,430,450,470]]
+  :[['سرفصل','شرح',...months],...SAMPLE.filter(x=>x[0]===f).map(([_,n,v])=>[n,'نمونه',...v])];
+const fullName=x=>x.form==='درآمد'&&x.bucket?x.name+(x.bucket==='g'?SG_:SO_):x.name;
 function guideForm(f){
   const g=[['راهنمای فایل «'+f+'»'],['۱. هر سطر یک ردیف است: ستون «سرفصل»، ستون «شرح» (اختیاری) و سپس دوازده ستون ماه.'],['۲. یک سرفصل می‌تواند در چند سطر با شرح‌های مختلف بیاید؛ جمع آن‌ها جمع سرفصل است.'],['۳. مبالغ به میلیون ریال، عددی و غیرمنفی باشند. ماه خالی مجاز است ولی هشدار می‌دهد.'],['۴. فایل بدون خطا به‌صورت پیش‌نویس ثبت می‌شود و پیش‌بینی بودجه فعلی تغییری نمی‌کند.'],[''],['قواعد بودجه‌ریزی مرتبط با این فرم']];
   (S.companyRules['دانا']||[]).forEach(r=>{if(r.category===RC?f==='هزینه':(FORMS.includes(r.category)?r.category===f:r.category!=='کل بودجه'))g.push([`${r.name} · ${r.category} · حداقل ${r.min||'—'} · حداکثر ${r.max||'—'} · ${r.type}`])});
@@ -82,8 +90,14 @@ function pnum(v){
 
 /* ---------- اعتبارسنجی ---------- */
 const isHR=n=>/حقوق|پرسنل|نیروی انسانی/.test(n);
+function catRows(final,cat){const rows=[];
+  if(cat==='کل بودجه')FORMS.forEach(f=>final[f].forEach(r=>rows.push(r)));
+  else if(FORMS.includes(cat))final[cat].forEach(r=>rows.push(r));
+  else FORMS.forEach(f=>final[f].forEach(r=>{if(r.name.includes(cat))rows.push(r)}));
+  return rows}
 function evalRule(final,rule){
   const cat=rule.category;
+  if(rule.kind==='ratio'){const g=c=>sum(catRows(final,c).map(r=>sum(r.values))),d=g(rule.den);return {skip:!d,value:d?g(rule.num)/d*100:0,pct:true}}
   if(cat===RC){const tot=sum(final['هزینه'].map(r=>sum(r.values))),hr=sum(final['هزینه'].filter(r=>isHR(r.name)).map(r=>sum(r.values)));return {skip:!tot,value:tot?hr/tot*100:0,pct:true}}
   let rows=[];
   if(cat==='کل بودجه')FORMS.forEach(f=>final[f].forEach(r=>rows.push(r)));
@@ -97,25 +111,26 @@ function ruleResults(final){
   return (S.companyRules['دانا']||[]).map(rule=>{
     const ev=evalRule(final,rule);if(ev.skip)return {rule,...ev,sev:null,msg:'هزینه‌ای ثبت نشده است؛ نسبت قابل محاسبه نیست.'};
     const v=ev.value,f=x=>ev.pct?num(Math.round(x*10)/10)+'٪':R(x);let msg='',viol=false;
-    if(rule.min!==''&&v<Number(rule.min)){viol=true;msg=`«${rule.name}»: ${ev.pct?'نسبت':'مجموع '+rule.category} برابر ${f(v)} است و از حداقل ${f(Number(rule.min))} کمتر است.`}
-    if(rule.max!==''&&v>Number(rule.max)){viol=true;msg=`«${rule.name}»: ${ev.pct?'نسبت':'مجموع '+rule.category} برابر ${f(v)} است و از حداکثر ${f(Number(rule.max))} بیشتر است.`}
+    if(rule.min!==''&&v<Number(rule.min)){viol=true;const mn=f(Number(rule.min));msg=ev.pct?`${rule.category} باید حداقل ${mn} باشد. مقدار فعلی ${f(v)}`:(rule.name.indexOf('حداقل')===0?`${rule.name} ${mn} میلیون ریال است. مقدار فعلی ${f(v)} میلیون ریال`:`${rule.name} باید حداقل ${mn} میلیون ریال باشد. مقدار فعلی ${f(v)} میلیون ریال`)}
+    if(rule.max!==''&&v>Number(rule.max)){viol=true;const mx=f(Number(rule.max));msg=ev.pct?`${rule.category} باید حداکثر ${mx} باشد. مقدار فعلی ${f(v)}`:`${rule.name} باید حداکثر ${mx} میلیون ریال باشد. مقدار فعلی ${f(v)} میلیون ریال`}
     return {rule,...ev,sev:viol?(rule.type==='خطای مانع'?'error':'warning'):null,msg:viol?msg:`${f(v)} · در محدوده`};
   });
 }
 function relevantRule(rule,form,final){
   const cat=rule.category;
+  if(rule.kind==='ratio')return [rule.num,rule.den].some(c=>FORMS.includes(c)?c===form:final[form].some(r=>r.name.includes(c)));
   if(cat===RC)return form==='هزینه';
   if(cat==='کل بودجه')return false;
   if(FORMS.includes(cat))return cat===form;
   return final[form].some(r=>r.name.includes(cat));
 }
 const aggVals=E=>months.map((_,i)=>{const xs=E.map(x=>x.values[i]).filter(v=>v!=null);return xs.length?sum(xs):null});
-function groupRows(rows){const m=new Map();rows.forEach(x=>{if(!m.has(x.name))m.set(x.name,[]);m.get(x.name).push({values:x.values.slice(),note:x.note||''})});return m}
+function groupRows(rows){const m=new Map();rows.forEach(x=>{const k=fullName(x);if(!m.has(k))m.set(k,[]);m.get(k).push({values:x.values.slice(),note:x.note||''})});return m}
 function validateBudget(aoa,form){
   const issues=[],add=(sev,where,msg)=>issues.push({sev,where,msg});
   const h=aoa.findIndex(r=>r.some(c=>norm(c)==='سرفصل'));
   if(h<0)return {fatal:`ساختار فایل با نمونه «${form}» مطابقت ندارد؛ ستون «سرفصل» یافت نشد. نمونه اکسل همین تب را دانلود و همان قالب را پر کنید.`,issues:[],rows:[]};
-  const head=aoa[h].map(norm),cN=head.indexOf('سرفصل'),cD=head.indexOf('شرح'),cM=months.map(m=>head.indexOf(norm(m)));
+  const head=aoa[h].map(norm),cN=head.indexOf('سرفصل'),cD=head.indexOf('شرح'),cB=form==='درآمد'?head.indexOf('نوع درآمد'):-1,cM=months.map(m=>head.indexOf(norm(m)));
   months.forEach((m,i)=>{if(cM[i]<0)add('error',`سطر ${h+1}`,`ستون ماه «${m}» در فایل یافت نشد.`)});
   const rows=[];
   for(let i=h+1;i<aoa.length;i++){
@@ -133,7 +148,9 @@ function validateBudget(aoa,form){
     });
     if(blanks===12)add('warning',`سطر ${xr}`,`همه ماه‌های ردیف «${name||'بدون عنوان'}» خالی است.`);
     else if(blanks)add('warning',`سطر ${xr}`,`${num(blanks)} ماه از ردیف «${name}» خالی است و خالی می‌ماند.`);
-    if(ok)rows.push({form,name,note,values});
+    let bucket=null;
+    if(cB>=0){const bv=norm(r[cB]);if(/خارج/.test(bv))bucket='o';else if(/گروه/.test(bv))bucket='g';else{add('error',`${colL(cB)}${xr}`,'نوع درآمد باید «به شرکت‌های گروه» یا «خارج از گروه» باشد.');ok=false}}
+    if(ok)rows.push({form,name,note,values,bucket});
   }
   if(!rows.length&&!issues.some(x=>x.sev==='error'))add('error','فایل','هیچ ردیف معتبری در فایل یافت نشد.');
   if(!issues.some(x=>x.sev==='error')){
@@ -245,7 +262,27 @@ window.impDraft=()=>{
   if(!canGo())return;
   const r=IMP.result,form=IMP.form,g=groupRows(r.rows),w=counts().w;
   const rows={'درآمد':[],'هزینه':[],'نقدینگی':[]},ent={};
-  [...g].forEach(([n,E])=>{rows[form].push({name:n,values:aggVals(E)});ent[n]=E});
+  if(form==='درآمد'){
+    const items=new Map(); // کالا/خدمت -> (شرح -> ردیف)
+    r.rows.forEach(x=>{
+      const legacy=!x.bucket,b=legacy?(/خارج از گروه|سایر شرکت/.test(x.name)?'o':'g'):x.bucket;
+      if(!items.has(x.name))items.set(x.name,new Map());
+      const m=items.get(x.name),k=x.note||'';
+      if(!m.has(k))m.set(k,{values:Array(12).fill(null),values2:Array(12).fill(null),note:k,legacy,b});
+      const en=m.get(k),arr=b==='g'?en.values:en.values2;
+      x.values.forEach((v,i)=>{if(v!=null)arr[i]=(arr[i]||0)+v});
+    });
+    items.forEach((m,item)=>{
+      const E=[...m.values()],first=E[0];
+      if(first&&first.legacy){const b=first.b;rows[form].push({name:item,values:aggVals(E.map(x=>({values:b==='g'?x.values:x.values2})))});}
+      else{
+        const gv=aggVals(E.map(x=>({values:x.values}))),ov=aggVals(E.map(x=>({values:x.values2})));
+        if(gv.some(v=>v!=null))rows[form].push({name:item+SG_,values:gv});
+        if(ov.some(v=>v!=null))rows[form].push({name:item+SO_,values:ov});
+      }
+      ent[item]=E.map(x=>({values:x.values,values2:x.values2,note:x.note}));
+    });
+  }else[...g].forEach(([n,E])=>{rows[form].push({name:n,values:aggVals(E)});ent[n]=E});
   const nm=`اکسل ${form} · ${new Date().toLocaleString('fa-IR')}`;
   createDraft(nm,'اکسل',rows,{forms:[form],entries:{[form]:ent}});
   logB('ثبت پیش‌نویس',`${num(r.rows.length)} ردیف در ${num(g.size)} سرفصل · به‌عنوان پیش‌نویس «${nm}» ثبت شد${w?` · ${num(w)} هشدار با تأیید کاربر`:''} · پیش‌بینی بودجه تغییری نکرد`);
@@ -281,7 +318,7 @@ window.impApply=mode=>{
       const arr=target[x.form],ex=arr.find(y=>y.name===x.name);
       if(ex){replaced++;ex.values=x.values.slice();ex.src='اکسل'}else{added++;arr.push({name:x.name,values:x.values.slice(),src:'اکسل'})}
     });
-    S.ay=IMP.year;
+    if(IMP.year>=1405)S.ay=IMP.year;
     if(lg){lg.outcome='ثبت عملکرد';lg.detail=`${num(added)} ردیف جدید افزوده شد · ${num(replaced)} ردیف موجود جایگزین شد${wn}`}
     msg='عملکرد ثبت شد.';
   }else{
@@ -310,8 +347,16 @@ window.budgetCheck=rows=>{
   const bad=all.some(r=>r.values.some(v=>v!=null&&(!Number.isFinite(Number(v))||Number(v)<0)));
   tasks.push({t:'مقادیر عددی و غیرمنفی',m:bad?'مقدار نامعتبر وجود دارد.':'موردی یافت نشد.',sev:bad?'error':null});
   if(!all.length)tasks.push({t:'وجود ردیف بودجه',m:'هیچ ردیفی ثبت نشده است.',sev:'error'});
-  else FORMS.forEach(f=>{if(!(rows[f]||[]).length)tasks.push({t:'فرم '+f,m:`هیچ ردیفی در فرم ${f} ثبت نشده است.`,sev:'warning'})});
+  else FORMS.forEach(f=>{if(!(rows[f]||[]).length)tasks.push({t:'فرم '+f,m:`هیچ ردیفی در فرم ${f} ثبت نشده است.`,sev:'error'})});
   ruleResults(rows).filter(x=>x.rule.name!=='ثبت مقادیر غیرمنفی').forEach(x=>tasks.push({t:x.rule.name,m:x.msg,sev:x.sev}));
+  // حالت نمونه: روی فرم‌های اصلی، یک خطا و یک هشدار نمونه برای نمایش اعتبارسنجی اضافه می‌شود
+  if(rows===S.rows&&S.demoSeed){
+    const T1='سقف نسبت هزینه نیروی انسانی به کل هزینه‌ها',T2='حداقل درآمد خارج از گروه دانا';
+    const keep=tasks.filter(x=>x.t!==T1&&x.t!==T2);
+    keep.push({t:T1,m:'نسبت هزینه نیروی انسانی به کل هزینه‌ها باید حداکثر ۶۰٪ باشد. مقدار فعلی ۷۵٪',sev:'error',sample:true});
+    keep.push({t:T2,m:'حداقل درآمد خارج از گروه دانا ۶٬۰۰۰ میلیون ریال است. مقدار فعلی ۳٬۵۰۰ میلیون ریال',sev:'warning',sample:true});
+    tasks.length=0;keep.forEach(x=>tasks.push(x));
+  }
   return {tasks,errors:tasks.filter(x=>x.sev==='error').length,warnings:tasks.filter(x=>x.sev==='warning').length};
 };
 let SEND=null;
@@ -372,6 +417,26 @@ window.syncDemo=()=>{
     if(ex){ex.values=vals;ex.src='راهکاران (نمونه)'}else d[f].push({name:n,values:vals,src:'راهکاران (نمونه)'});
   });
   S.syncAt=new Date().toLocaleString('fa-IR');S.ay=y;save();closeModal();render();
+};
+
+/* ---------- تاریخچه عملکرد مالی: فقط ورود از اکسل برای سال‌های قبل از ۱۴۰۵ ---------- */
+const HY=[1404,1403,1402,1401];
+S.hy=S.hy||'';
+window.hySet=v=>{S.hy=v?Number(v):'';save();render()};
+window.hyImport=()=>{if(S.hy)importModal('actual',S.hy)};
+window.hyView=y=>{
+  const d=adata(y),QN4=['بهار','تابستان','پاییز','زمستان'],q=v=>[0,1,2,3].map(i=>sum(v.slice(i*3,i*3+3).map(x=>x||0)));
+  modal(`عملکرد مالی ${fa(y)}`,`<p class="muted small">فقط مشاهده · میلیون ریال · برای تغییر، فایل اکسل جدید بارگذاری کنید.</p>`+FORMS.map(f=>`<h3 style="margin-top:14px">${f}</h3><div class="tablewrap"><table><thead><tr><th>سرفصل</th>${QN4.map(x=>`<th>${x}</th>`).join('')}<th>جمع سال</th><th>منبع</th></tr></thead><tbody>${d[f].length?d[f].map(r=>`<tr><td>${esc(r.name)}</td>${q(r.values).map(v=>`<td>${num(v)}</td>`).join('')}<td><b>${num(sum(r.values.map(x=>x||0)))}</b></td><td><span class="badge">${esc(r.src||'—')}</span></td></tr>`).join(''):'<tr><td colspan="7" class="empty">داده‌ای نیست.</td></tr>'}</tbody></table></div>`).join(''),`<button class="btn" onclick="closeModal()">بستن</button>`);
+  document.querySelector('#modal .modal').style.width='min(860px,100%)';
+};
+pages.history=()=>{
+  const y=S.hy,tot=(d,f)=>sum((d[f]||[]).map(r=>sum(r.values.map(x=>x||0))));
+  const have=HY.filter(x=>S.actData&&S.actData[x]&&FORMS.some(f=>(S.actData[x][f]||[]).length));
+  return `${heading('تاریخچه عملکرد مالی','ورود عملکرد محقق‌شده‌ی سال‌های مالی تمام‌شده (قبل از ۱۴۰۵) فقط از طریق اکسل')}
+  <div class="card"><h2>ورود عملکرد از اکسل</h2><p class="muted small">در این بخش ثبت موردی یا فیلدی ممکن نیست؛ ابتدا سال را انتخاب کنید و سپس فایل اکسل آن سال را بارگذاری کنید.</p>
+  <div class="filters" style="align-items:flex-end;margin-top:12px"><div class="field" style="margin:0"><label>۱. سال مالی</label><select onchange="hySet(this.value)"><option value="">انتخاب کنید</option>${HY.map(x=>`<option value="${x}" ${x===y?'selected':''}>${fa(x)}</option>`).join('')}</select></div>
+  <div class="field" style="margin:0"><label>۲. فایل اکسل</label><button class="btn ${y?'primary':''}" ${y?'':'disabled'} onclick="hyImport()">${y?`ورود عملکرد ${fa(y)} از اکسل`:'ابتدا سال را انتخاب کنید'}</button></div></div></div>
+  <div class="card" style="margin-top:18px"><h2>سال‌های ثبت‌شده</h2><div class="tablewrap"><table><thead><tr><th>سال مالی</th><th>تعداد سرفصل</th><th>جمع درآمد</th><th>جمع هزینه</th><th>سود/زیان ناخالص</th><th></th></tr></thead><tbody>${have.length?have.map(x=>{const d=adata(x),i=tot(d,'درآمد'),c=tot(d,'هزینه');return `<tr><td><b>${fa(x)}</b></td><td>${num(FORMS.reduce((a,f)=>a+d[f].length,0))}</td><td>${R(i)}</td><td>${R(c)}</td><td class="${i-c<0?'t-bad':'t-good'}">${(i-c>0?'+':i-c<0?'−':'')+R(Math.abs(i-c))}</td><td><button class="btn" onclick="hyView(${x})">مشاهده</button></td></tr>`}).join(''):'<tr><td colspan="6" class="empty">هنوز عملکردی برای سال‌های قبل ثبت نشده است.</td></tr>'}</tbody></table></div></div>`;
 };
 window.XL={loadXLSX,saveBlob};
 render();
