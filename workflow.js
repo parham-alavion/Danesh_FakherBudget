@@ -181,6 +181,7 @@ function setEntries(f,n,E,st=ST){
   if(!row){row={name:n,values:vals};st.rows[f].push(row)}else row.values=vals;
   delete row.note;
   if(!E.length&&DEFN[f].includes(n))st.rows[f].splice(st.rows[f].indexOf(row),1);
+  if(st.actual)row.src='دستی';
   if(st!==S)st.dirty=true;
   save();
 }
@@ -189,9 +190,9 @@ const REV='بررسی';
 const tabsHtml=f=>`<div class="tabs">${FORMS.map(x=>`<button class="${f===x?'active':''}" onclick="set('form','${x}')">${x}</button>`).join('')}<button class="${f===REV?'active':''}" onclick="set('form','${REV}')">بررسی نهایی و ثبت</button></div>`;
 function budgetPage(){
   const f=S.form;
-  if(f===REV)return `${heading('پیش‌بینی بودجه دانا','ورود ماهانه · سال مالی ۱۴۰۶ · واحد: میلیون تومان')}<div class="card f-rev">${tabsHtml(f)}${reviewHtml()}</div>`;
+  if(f===REV)return `${heading('پیش‌بینی بودجه دانا','ورود ماهانه · سال مالی ۱۴۰۶ · واحد: میلیون ریال')}<div class="card f-rev">${tabsHtml(f)}${reviewHtml()}</div>`;
   const rows=S.rows[f],total=sum(rows.map(r=>sum(r.values)));
-  return `${heading('پیش‌بینی بودجه دانا','ورود ماهانه · سال مالی ۱۴۰۶ · واحد: میلیون تومان')}
+  return `${heading('پیش‌بینی بودجه دانا','ورود ماهانه · سال مالی ۱۴۰۶ · واحد: میلیون ریال')}
   <div class="card ${fcls(f)}">${tabsHtml(f)}
   <div class="spread"><div><h2>ثبت ${f} ماهانه</h2><p class="muted small">یکی از انواع و سرفصل‌ها را انتخاب کنید تا ردیف‌های آن و جدول ماهانه‌شان باز شود. هر نوع می‌تواند چند ردیف با شرح‌های مختلف داشته باشد.</p></div><span class="badge">${S.status}</span></div>
   <div class="filters" style="align-items:flex-end;margin-top:16px"><div class="field" style="margin:0;min-width:280px"><label>نوع / سرفصل</label><select onchange="gridPick(this)"><option value="">انتخاب کنید</option>${typesOf(f,S).map(n=>{const c=getEntries(f,n,S).length;return `<option value="${esc(n)}">${esc(n)}${c?' ✓':''}</option>`}).join('')}</select></div><button class="btn" onclick="newTypeMain()">＋ تعریف نوع / سرفصل جدید</button><button class="btn" onclick="importModal('budget','${f}')">ورود ${f} از اکسل</button></div>
@@ -264,7 +265,7 @@ function reviewHtml(rowsIn,de){
   const row=(label,v,cls,n,sign,fml)=>`<tr class="${cls==='res'?'stres':cls==='sum'?'stsum':''}"><td style="white-space:normal">${n?`<span class="muted small" style="margin-left:6px">${num(n)}</span>`:''}${sign?`<span class="sgn">${sign}</span>`:''}${label}${fml?`<div class="small muted" style="font-weight:normal">= ${fml}</div>`:''}</td>${qsum(v).map(x=>`<td>${nf(x)}</td>`).join('')}<td><b>${nf(sum(v))}</b></td></tr>`;
   const srow=l=>l.t==='head'?`<tr class="sthead"><td colspan="6">${l.label}</td></tr>`:row(l.label,l.v,l.t,l.n,l.sign,l.f);
   return `<div class="spread"><div><h2>بررسی نهایی و ثبت</h2><p class="muted small">خلاصه‌ی محاسبه‌شده از تب‌های درآمد، هزینه و نقدینگی. ${de?'در این تب می‌توانید اکسل خروجی را دانلود، تغییرات پیش‌نویس را ذخیره یا پیش‌نویس را حذف کنید. ارسال برای هلدینگ از «درخواست‌های بودجه» انجام می‌شود.':'در این تب فقط می‌توانید پیش‌نویس ذخیره کنید؛ ارسال برای هلدینگ از «درخواست‌های بودجه» انجام می‌شود.'}</p></div>${de?'':`<span class="badge">${S.status}</span>`}</div>
-  <div class="grid kpis" style="margin-top:14px">${kp('جمع درآمد فروش',nf(T(st.rev)),'میلیون تومان')}${kp('سود / زیان ناخالص',nf(T(st.gross)),T(st.rev)?'حاشیه '+num(Math.round(T(st.gross)/T(st.rev)*100))+'٪':'—')}${kp('سود / زیان عملیاتی',nf(T(st.opInc)),'پیش از هزینه مالی و مالیات')}${kp('سود / زیان خالص پس از مالیات',nf(T(st.net)),'میلیون تومان')}</div>
+  <div class="grid kpis" style="margin-top:14px">${kp('جمع درآمد فروش',nf(T(st.rev)),'میلیون ریال')}${kp('سود / زیان ناخالص',nf(T(st.gross)),T(st.rev)?'حاشیه '+num(Math.round(T(st.gross)/T(st.rev)*100))+'٪':'—')}${kp('سود / زیان عملیاتی',nf(T(st.opInc)),'پیش از هزینه مالی و مالیات')}${kp('سود / زیان خالص پس از مالیات',nf(T(st.net)),'میلیون ریال')}</div>
   <div class="grid kpis">${kp('کل هزینه‌ها',nf(cost),'جمع تب هزینه')}${kp('نسبت هزینه نیروی انسانی',cost?num(Math.round(hr/cost*1000)/10)+'٪':'—','به کل هزینه‌ها')}${kp('خالص جریان نقدی',nf(T(cn)),'دریافت − پرداخت')}<div class="card kpi" style="cursor:pointer" onclick="controlsModal()"><span class="muted">نتیجه کنترل‌ها</span><div class="value">${empty?'<span class="muted">بدون داده</span>':chk.errors?`<span class="t-bad">${num(chk.errors)} خطا</span>`:chk.warnings?`<span>${num(chk.warnings)} هشدار</span>`:'<span class="t-good">بدون مشکل</span>'}</div><span class="small muted">برای مشاهده کلیک کنید</span></div></div>
   <h3 style="margin-top:8px">صورت سود و زیان</h3>
   <div class="tablewrap"><table class="stmt"><thead><tr><th>شرح</th>${QN.map(q=>`<th>${q}</th>`).join('')}<th>جمع سال</th></tr></thead><tbody>${st.lines.map(srow).join('')}</tbody></table></div>
@@ -282,19 +283,21 @@ let DT=null;
 window.openMain=(f,i)=>{ST=S;openDetail(f,i)};
 window.editBudgetRow=i=>openMain(S.form,i);
 window.openDetail=(f,i)=>{const r=ST.rows[f][i];if(r)startDetail(f,r.name)};
-const curForm=()=>ST===S?S.form:DE.tab;
+const curForm=()=>ST===S?S.form:ST.actual?S.af:DE.tab;
+const faY=n=>String(n).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
+const yl=()=>ST&&ST.actual?'سال '+faY(S.ay):'سال مالی ۱۴۰۶';
 window.gridPick=el=>{const v=el.value;el.value='';if(v){ST=S;startDetail(S.form,v)}};
 function startDetail(f,n){DT={form:f,name:n,idx:-1};getEntries(f,n).length?renderDetail():detNew()}
 const wide=()=>{document.querySelector('#modal .modal').style.width='min(860px,100%)'};
 function renderDetail(){
   const {form,name}=DT,E=getEntries(form,name),qs=e=>[0,1,2,3].map(q=>sum(e.values.slice(q*3,q*3+3)));
   const all=aggE(E),tq=[0,1,2,3].map(q=>sum(all.slice(q*3,q*3+3)));
-  modal(`${esc(form)} · ${esc(name)}`,`<p class="muted small">سال مالی ۱۴۰۶ · میلیون تومان · هر ردیف مقادیر و شرح جداگانه دارد</p>
+  modal(`${esc(form)} · ${esc(name)}`,`<p class="muted small">${yl()} · میلیون ریال · هر ردیف مقادیر و شرح جداگانه دارد</p>
   <div class="tablewrap"><table><thead><tr><th>#</th><th>شرح</th>${QN.map(q=>`<th>${q}</th>`).join('')}<th>جمع سال</th><th>عملیات</th></tr></thead><tbody>${E.length?E.map((e,i)=>`<tr><td>${num(i+1)}</td><td style="white-space:normal;min-width:120px">${esc(e.note||'—')}</td>${qs(e).map(v=>`<td>${num(v)}</td>`).join('')}<td><b>${num(sum(e.values))}</b></td><td><button class="btn link" onclick="detEdit(${i})">ویرایش</button><button class="btn link" onclick="detDel(${i})">حذف</button></td></tr>`).join('')+`<tr style="font-weight:bold"><td colspan="2">جمع ${esc(name)}</td>${tq.map(v=>`<td>${num(v)}</td>`).join('')}<td>${num(sum(all))}</td><td></td></tr>`:'<tr><td colspan="8" class="empty">ردیفی ثبت نشده است.</td></tr>'}</tbody></table></div>
-  <div class="actions" style="justify-content:flex-start;margin-top:14px"><button class="btn primary" onclick="detNew()">＋ ردیف جدید</button></div>`,`<button class="btn" onclick="detClose()">${ST===S?'بستن':'بازگشت به پیش‌نویس'}</button>`);
+  <div class="actions" style="justify-content:flex-start;margin-top:14px"><button class="btn primary" onclick="detNew()">＋ ردیف جدید</button></div>`,`<button class="btn" onclick="detClose()">${ST===S||ST.actual?'بستن':'بازگشت به پیش‌نویس'}</button>`);
   wide();
 }
-window.detClose=()=>{if(ST===S){closeModal();render()}else renderDE()};
+window.detClose=()=>{if(ST===S||ST.actual){ST=S;closeModal();render()}else renderDE()};
 window.detNew=()=>{DT.idx=-1;renderGrid(Array(12).fill(null),'')};
 window.detEdit=i=>{const e=getEntries(DT.form,DT.name)[i];if(!e)return;DT.idx=i;renderGrid(e.values,e.note||'')};
 window.detBack=()=>{getEntries(DT.form,DT.name).length||DT.idx>=0?renderDetail():detClose()};
@@ -306,7 +309,7 @@ function renderGrid(v,note){
     <tr>${months.slice(m0,m0+6).map((m,k)=>`<td><input type="number" min="0" step="any" id="gm${m0+k}" value="${v[m0+k]==null?'':v[m0+k]}"></td>`).join('')}</tr>
     <tr class="tot">${[q0,q0+1].map(q=>`<td colspan="3">جمع ${QN[q]}: <b id="gs${q}">0</b></td>`).join('')}</tr>`;
   };
-  modal(`${esc(DT.form)} · ${esc(DT.name)} · ${DT.idx>=0?'ویرایش ردیف '+num(DT.idx+1):'ردیف جدید'}`,`<p class="muted small">سال مالی ۱۴۰۶ · میلیون تومان · ماه‌های خالی، خالی می‌مانند</p>
+  modal(`${esc(DT.form)} · ${esc(DT.name)} · ${DT.idx>=0?'ویرایش ردیف '+num(DT.idx+1):'ردیف جدید'}`,`<p class="muted small">${yl()} · میلیون ریال · ماه‌های خالی، خالی می‌مانند</p>
   <div class="tablewrap"><table class="mgrid" oninput="gridTot()"><tbody>${half(0)}${half(1)}<tr class="tot"><td colspan="6">جمع سال: <b id="gy">0</b></td></tr></tbody></table></div>
   <div class="field"><label>شرح</label><input id="gNote" value="${esc(note)}" placeholder="شرح این ردیف"></div><p id="gErr" class="error"></p>`,
   `<button class="btn" onclick="detBack()">بازگشت</button><button class="btn primary" onclick="detSave()">ثبت</button>`);
@@ -323,12 +326,12 @@ window.detSave=()=>{
   if(vals.every(x=>x==null)){$('gErr').textContent='حداقل یک مبلغ وارد کنید.';return}
   const {form,name,idx}=DT,E=clone(getEntries(form,name)),e={values:vals,note:$('gNote').value.trim()};
   if(idx>=0)E[idx]=e;else E.push(e);
-  setEntries(form,name,E);if(ST===S){S.form=form;render()}renderDetail();
+  setEntries(form,name,E);if(ST===S){S.form=form;render()}else if(ST.actual){S.af=form;render()}renderDetail();
 };
 window.detDel=i=>{
   const {form,name}=DT,E=clone(getEntries(form,name));
   if(!confirm('این ردیف حذف شود؟'))return;
-  E.splice(i,1);setEntries(form,name,E);if(ST===S)render();renderDetail();
+  E.splice(i,1);setEntries(form,name,E);if(ST===S||ST.actual)render();renderDetail();
 };
 window.newTypeMain=()=>{ST=S;newTypeModal()};
 window.newTypeModal=()=>modal(`تعریف نوع / سرفصل جدید · ${curForm()}`,`<div class="field"><label>عنوان نوع / سرفصل *</label><input id="ntName" placeholder="عنوان سرفصل"></div><p id="ntErr" class="error"></p>`,`<button class="btn" onclick="detClose()">انصراف</button><button class="btn primary" onclick="newTypeSave()">تعریف و ورود مبالغ</button>`);
@@ -336,7 +339,7 @@ window.newTypeSave=()=>{
   const n=$('ntName').value.trim(),f=curForm();
   if(!n){$('ntErr').textContent='عنوان الزامی است.';return}
   if(typesOf(f).includes(n)){$('ntErr').textContent='این عنوان قبلاً وجود دارد؛ آن را از فهرست انتخاب کنید.';return}
-  setEntries(f,n,[]);if(ST===S)render();DT={form:f,name:n,idx:-1};detNew();
+  setEntries(f,n,[]);if(ST===S||ST.actual)render();DT={form:f,name:n,idx:-1};detNew();
 };
 window.saveDraftModal=()=>{
   if(!Object.values(S.rows).flat().length){modal('ذخیره پیش‌نویس','<p>فرم‌ها هنوز ردیفی ندارند؛ ابتدا اطلاعات بودجه را وارد کنید.</p>','<button class="btn" onclick="closeModal()">بستن</button>');return}
@@ -348,7 +351,7 @@ window.controlsModal=()=>{
   const rows=ST.rows,empty=!Object.values(rows).flat().length,c=empty?null:budgetCheck(rows);
   modal('کنترل‌های بودجه',empty?'<p class="muted">هنوز اطلاعاتی ثبت نشده است؛ پس از ثبت اطلاعات، نتیجه‌ی کنترل‌ها اینجا نمایش داده می‌شود.</p>'
     :`<p class="muted">بر اساس قواعد بودجه‌ریزی شرکت</p><div class="row" style="margin-bottom:8px"><span class="badge ${c.errors?'bad':'good'}">${num(c.errors)} خطا</span><span class="badge ${c.warnings?'warn':'good'}">${num(c.warnings)} هشدار</span></div>${[...c.tasks].sort((a,b)=>({error:0,warning:1})[a.sev]-({error:0,warning:1})[b.sev]||0).map(x=>`<div class="task"><div><b>${esc(x.t)}</b><p>${esc(x.m)}</p></div><span class="badge ${x.sev==='error'?'bad':x.sev==='warning'?'warn':'good'}">${x.sev==='error'?'خطا · مانع ارسال':x.sev==='warning'?'هشدار':'تأیید'}</span></div>`).join('')}`,
-    `<button class="btn primary" onclick="detClose()">${ST===S?'بستن':'بازگشت به پیش‌نویس'}</button>`);
+    `<button class="btn primary" onclick="detClose()">${ST===S||ST.actual?'بستن':'بازگشت به پیش‌نویس'}</button>`);
 };
 let DE=null;
 window.draftView=i=>{
@@ -396,5 +399,28 @@ window.draftOpenModal=i=>{const d=S.drafts[i];if(!d)return;modal('بازکردن
 window.draftOpen=i=>{const d=S.drafts[i];if(!d)return;const r=clone(d.rows);(d.forms||FORMS).forEach(f=>{S.rows[f]=r[f]||[];S.entries[f]=d.entries&&d.entries[f]?clone(d.entries[f]):{}});save();closeModal();render()};
 window.draftSend=i=>{const d=S.drafts[i];if(d)sendCheckModal(d.rows,{name:d.name,source:d.source,note:`ایجاد از پیش‌نویس «${d.name}»`})};
 window.draftDel=i=>{const d=S.drafts[i];if(d&&confirm(`پیش‌نویس «${d.name}» حذف شود؟`)){S.drafts.splice(i,1);save();render()}};
+
+/* ---------- ایجاد عملکرد جدید: همان رابط پیش‌بینی بودجه ---------- */
+S.actEntries=S.actEntries||{};
+function actStore(){
+  const y=S.ay,d=(S.actData=S.actData||{})[y]=(S.actData[y]||{});FORMS.forEach(f=>d[f]=d[f]||[]);
+  const e=S.actEntries[y]=S.actEntries[y]||{};FORMS.forEach(f=>e[f]=e[f]||{});
+  return {actual:true,rows:d,entries:e};
+}
+window.openAct=(f,i)=>{ST=actStore();openDetail(f,i)};
+window.gridPickA=el=>{const v=el.value;el.value='';if(v){ST=actStore();startDetail(S.af,v)}};
+window.newTypeAct=()=>{ST=actStore();newTypeModal()};
+pages.actual=()=>{
+  const st=actStore(),y=S.ay,f=S.af,rows=st.rows[f],total=sum(rows.map(r=>sum(r.values)));
+  const filled=months.map((_,i)=>rows.some(r=>r.values[i]!=null)).filter(Boolean).length;
+  return `${heading('ایجاد عملکرد جدید','ثبت عملکرد محقق‌شده دانا به تفکیک سال · واحد: میلیون ریال',`<div class="actions"><button class="btn" onclick="importModal('actual')">ورود از اکسل</button><button class="btn" onclick="syncModal()">همگام‌سازی با راهکاران</button></div>`)}
+  <div class="card ${fcls(f)}">${`<div class="tabs">${FORMS.map(x=>`<button class="${f===x?'active':''}" onclick="set('af','${x}')">${x}</button>`).join('')}</div>`}
+  <div class="spread"><div><h2>ثبت عملکرد محقق‌شده ${f} · سال ${faY(y)}</h2><p class="muted small">یکی از انواع و سرفصل‌ها را انتخاب کنید تا ردیف‌های آن و جدول ماهانه‌شان باز شود. هر نوع می‌تواند چند ردیف با شرح‌های مختلف داشته باشد.</p></div></div>
+  <div class="filters" style="align-items:flex-end;margin-top:16px"><div class="field" style="margin:0"><label>سال</label><select onchange="S.ay=Number(this.value);save();render()">${[1403,1404,1405].map(x=>`<option value="${x}" ${x===y?'selected':''}>${faY(x)}</option>`).join('')}</select></div>
+  <div class="field" style="margin:0;min-width:280px"><label>نوع / سرفصل</label><select onchange="gridPickA(this)"><option value="">انتخاب کنید</option>${typesOf(f,st).map(n=>{const c=getEntries(f,n,st).length;return `<option value="${esc(n)}">${esc(n)}${c?' ✓':''}</option>`}).join('')}</select></div><button class="btn" onclick="newTypeAct()">＋ تعریف نوع / سرفصل جدید</button></div>
+  <p class="muted small" style="margin-top:10px">${num(rows.length)} سرفصل · داده ${num(filled)} ماه از ۱۲ ماه</p>
+  <div class="tablewrap" style="margin-top:14px"><table><thead><tr><th>نوع / سرفصل</th><th>تعداد ردیف</th>${QN.map(q=>`<th>${q}</th>`).join('')}<th>جمع سال</th><th>منبع</th><th>عملیات</th></tr></thead><tbody>${rows.length?rows.map((r,i)=>`<tr><td>${esc(r.name)}</td><td>${num(getEntries(f,r.name,st).length)}</td>${qsum(r.values).map(v=>`<td>${num(v)}</td>`).join('')}<td><b>${num(sum(r.values))}</b></td><td><span class="badge">${esc(r.src||'دستی')}</span></td><td><button class="btn" onclick="openAct('${f}',${i})">مشاهده و ویرایش جزئیات</button></td></tr>`).join('')+(f==='نقدینگی'?'':`<tr style="font-weight:bold"><td colspan="2">جمع ${f}</td>${qsum(months.map((_,m)=>sum(rows.map(r=>r.values[m])))).map(v=>`<td>${num(v)}</td>`).join('')}<td>${num(total)}</td><td></td><td></td></tr>`):'<tr><td colspan="9" class="empty">هنوز عملکردی برای این سال ثبت نشده است. یک نوع یا سرفصل را انتخاب کنید، از اکسل وارد کنید یا با راهکاران همگام‌سازی کنید.</td></tr>'}</tbody></table></div>
+  <p class="muted small" style="margin-top:14px">ماه‌های ثبت‌نشده خالی می‌مانند. عملکرد محقق‌شده فقط تا سال ۱۴۰۵ ثبت می‌شود؛ سال ۱۴۰۶ پیش‌بینی بودجه دارد.</p></div>`;
+};
 render();
 })();

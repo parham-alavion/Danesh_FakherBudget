@@ -5,11 +5,11 @@ const fa=n=>String(n).replace(/\d/g,d=>'۰۱۲۳۴۵۶۷۸۹'[d]);
 const R=n=>num(Math.round(n));
 const norm=s=>String(s==null?'':s).trim().replace(/ي/g,'ی').replace(/ك/g,'ک');
 const colL=i=>String.fromCharCode(65+i);
-const YEARS=[1403,1404,1405,1406];
+const YEARS=[1403,1404,1405];
 const RC='نسبت هزینه نیروی انسانی به کل هزینه‌ها';
 (()=>{const l=S.companyRules&&S.companyRules['دانا'];if(!l)return;const i=l.findIndex(r=>r.name==='ثبت مقادیر غیرمنفی');const nr={name:'سقف نسبت هزینه نیروی انسانی به کل هزینه‌ها',type:'خطای مانع',category:RC,min:'',max:'60'};if(i>=0)l.splice(i,1,nr);else if(!l.some(r=>r.category===RC))l.push(nr);if(!S.rcErrMig){const x=l.find(r=>r.category===RC);if(x)x.type='خطای مانع';S.rcErrMig=true}save()})();
 S.impLog=S.impLog||[];
-S.ay=S.ay||1406;S.af=S.af||'درآمد';S.actData=S.actData||{};
+S.ay=Math.min(S.ay||1405,1405);S.af=S.af||'درآمد';S.actData=S.actData||{};
 const adata=y=>{const d=S.actData[y]=S.actData[y]||{};FORMS.forEach(f=>d[f]=d[f]||[]);return d};
 
 /* ---------- منوی گروه‌بندی‌شده ---------- */
@@ -24,12 +24,12 @@ const SAMPLE=[['درآمد','درآمد خدمات به شرکت‌های گرو
 const sampleAoa=()=>[['فرم','ردیف',...months],...SAMPLE.map(([f,n,v])=>[f,n,...v])];
 const sampleForm=f=>[['سرفصل','شرح',...months],...SAMPLE.filter(x=>x[0]===f).map(([_,n,v])=>[n,'نمونه',...v])];
 function guideForm(f){
-  const g=[['راهنمای فایل «'+f+'»'],['۱. هر سطر یک ردیف است: ستون «سرفصل»، ستون «شرح» (اختیاری) و سپس دوازده ستون ماه.'],['۲. یک سرفصل می‌تواند در چند سطر با شرح‌های مختلف بیاید؛ جمع آن‌ها جمع سرفصل است.'],['۳. مبالغ به میلیون تومان، عددی و غیرمنفی باشند. ماه خالی مجاز است ولی هشدار می‌دهد.'],['۴. فایل بدون خطا به‌صورت پیش‌نویس ثبت می‌شود و پیش‌بینی بودجه فعلی تغییری نمی‌کند.'],[''],['قواعد بودجه‌ریزی مرتبط با این فرم']];
+  const g=[['راهنمای فایل «'+f+'»'],['۱. هر سطر یک ردیف است: ستون «سرفصل»، ستون «شرح» (اختیاری) و سپس دوازده ستون ماه.'],['۲. یک سرفصل می‌تواند در چند سطر با شرح‌های مختلف بیاید؛ جمع آن‌ها جمع سرفصل است.'],['۳. مبالغ به میلیون ریال، عددی و غیرمنفی باشند. ماه خالی مجاز است ولی هشدار می‌دهد.'],['۴. فایل بدون خطا به‌صورت پیش‌نویس ثبت می‌شود و پیش‌بینی بودجه فعلی تغییری نمی‌کند.'],[''],['قواعد بودجه‌ریزی مرتبط با این فرم']];
   (S.companyRules['دانا']||[]).forEach(r=>{if(r.category===RC?f==='هزینه':(FORMS.includes(r.category)?r.category===f:r.category!=='کل بودجه'))g.push([`${r.name} · ${r.category} · حداقل ${r.min||'—'} · حداکثر ${r.max||'—'} · ${r.type}`])});
   return g;
 }
 function guideAoa(){
-  const g=[['راهنمای فایل'],['۱. در شیت اول، هر سطر یک ردیف است: ستون «فرم» (درآمد، هزینه یا نقدینگی)، ستون «ردیف» و سپس دوازده ستون ماه.'],['۲. مبالغ به میلیون تومان، عددی و غیرمنفی باشند. ماه خالی مجاز است ولی هشدار می‌دهد.'],['۳. عنوان ردیف در هر فرم نباید تکراری باشد.'],['۴. ردیف هم‌نام در فرم‌های سامانه با مقادیر فایل جایگزین می‌شود و ردیف جدید افزوده می‌شود.'],[''],['قواعد بودجه‌ریزی فعال (فقط برای بودجه)']];
+  const g=[['راهنمای فایل'],['۱. در شیت اول، هر سطر یک ردیف است: ستون «فرم» (درآمد، هزینه یا نقدینگی)، ستون «ردیف» و سپس دوازده ستون ماه.'],['۲. مبالغ به میلیون ریال، عددی و غیرمنفی باشند. ماه خالی مجاز است ولی هشدار می‌دهد.'],['۳. عنوان ردیف در هر فرم نباید تکراری باشد.'],['۴. ردیف هم‌نام در فرم‌های سامانه با مقادیر فایل جایگزین می‌شود و ردیف جدید افزوده می‌شود.'],[''],['قواعد بودجه‌ریزی فعال (فقط برای بودجه)']];
   (S.companyRules['دانا']||[]).forEach(r=>g.push([`${r.name} · ${r.category} · حداقل ${r.min||'—'} · حداکثر ${r.max||'—'} · ${r.type}`]));
   return g;
 }
@@ -233,7 +233,7 @@ function renderImportBudget(){
       <div class="actions" style="margin-top:12px"><button class="btn" onclick="impCancel()">لغو</button><button class="btn primary impgo" disabled onclick="impDraft()">ثبت به‌عنوان پیش‌نویس</button></div></div>`;
     }
   }
-  modal(`ورود ${form} از اکسل`,`<div class="notice" style="margin:10px 0"><b>۱.</b> نمونه اکسل «${form}» را دانلود کنید. <b>۲.</b> مبالغ را به میلیون تومان در همان قالب وارد کنید؛ هر سرفصل می‌تواند چند سطر با شرح‌های مختلف داشته باشد. <b>۳.</b> فایل را بارگذاری کنید تا اعتبارسنجی و قواعد بودجه‌ریزی بررسی شوند. فایل بدون خطا در بخش «فایل آماده ثبت» نمایش داده می‌شود.</div><div class="actions" style="justify-content:flex-start;margin:12px 0"><button class="btn" onclick="impSample()">دانلود نمونه اکسل</button></div><div class="field"><label>بارگذاری فایل (xlsx، xls یا csv)</label><input type="file" accept=".xlsx,.xls,.csv" onchange="impFile(this.files[0])"></div><p id="impMsg" class="small ${IMP.msg&&/CSV/.test(IMP.msg)?'error':'muted'}">${esc(IMP.msg||'')}</p>${res}${hist()}`,`<button class="btn" onclick="closeModal()">بستن</button>`);
+  modal(`ورود ${form} از اکسل`,`<div class="notice" style="margin:10px 0"><b>۱.</b> نمونه اکسل «${form}» را دانلود کنید. <b>۲.</b> مبالغ را به میلیون ریال در همان قالب وارد کنید؛ هر سرفصل می‌تواند چند سطر با شرح‌های مختلف داشته باشد. <b>۳.</b> فایل را بارگذاری کنید تا اعتبارسنجی و قواعد بودجه‌ریزی بررسی شوند. فایل بدون خطا در بخش «فایل آماده ثبت» نمایش داده می‌شود.</div><div class="actions" style="justify-content:flex-start;margin:12px 0"><button class="btn" onclick="impSample()">دانلود نمونه اکسل</button></div><div class="field"><label>بارگذاری فایل (xlsx، xls یا csv)</label><input type="file" accept=".xlsx,.xls,.csv" onchange="impFile(this.files[0])"></div><p id="impMsg" class="small ${IMP.msg&&/CSV/.test(IMP.msg)?'error':'muted'}">${esc(IMP.msg||'')}</p>${res}${hist()}`,`<button class="btn" onclick="closeModal()">بستن</button>`);
   document.querySelector('#modal .modal').style.width='min(860px,100%)';syncBtns();
 }
 const logB=(outcome,detail)=>{S.impLog.unshift({id:Date.now(),time:new Date().toLocaleString('fa-IR'),kind:'budget',form:IMP.form,file:IMP.fname,outcome,detail});S.impLog.length=Math.min(S.impLog.length,50)};
@@ -268,7 +268,7 @@ function renderImport(){
       :`<div class="notice" style="margin-top:12px;background:#e7f5ed;color:#27754c">خطا یا هشداری یافت نشد.</div>`}`;
   }
   const foot=`<button class="btn" onclick="closeModal()">بستن</button>`+(actual?`<button class="btn primary impgo" disabled onclick="impApply(false)">ثبت عملکرد</button>`:`<button class="btn impgo" disabled onclick="impApply('draft')">ذخیره به‌عنوان پیش‌نویس</button><button class="btn primary impgo" data-send="1" disabled onclick="impApply('send')">ارسال به گردش تصویب</button>`);
-  modal(title,`<div class="notice" style="margin:10px 0"><b>۱.</b> نمونه اکسل را دانلود کنید. <b>۲.</b> مبالغ را به میلیون تومان در همان قالب وارد کنید. <b>۳.</b> فایل را بارگذاری کنید تا قواعد اعتبارسنجی ${actual?'':'و قواعد بودجه‌ریزی '}بررسی شوند.${actual?'':' فرم‌های فعلی شما تغییری نمی‌کند؛ فایل فقط به‌صورت پیش‌نویس یا درخواست در گردش تصویب ثبت می‌شود.'}</div><div class="actions" style="justify-content:flex-start;margin:12px 0"><button class="btn" onclick="impSample()">دانلود نمونه اکسل</button></div><div class="field"><label>بارگذاری فایل (xlsx، xls یا csv)</label><input type="file" accept=".xlsx,.xls,.csv" onchange="impFile(this.files[0])"></div><p id="impMsg" class="small ${IMP.msg&&/CSV/.test(IMP.msg)?'error':'muted'}">${esc(IMP.msg||'')}</p>${res}${!actual&&window.subBlocked&&subBlocked()?'<div class="notice" style="margin-top:12px;background:#fff4da">یک بودجه در گردش تصویب دارید؛ تا حذف یا تصویب آن، فقط ذخیره پیش‌نویس ممکن است.</div>':''}${hist()}`,foot);
+  modal(title,`<div class="notice" style="margin:10px 0"><b>۱.</b> نمونه اکسل را دانلود کنید. <b>۲.</b> مبالغ را به میلیون ریال در همان قالب وارد کنید. <b>۳.</b> فایل را بارگذاری کنید تا قواعد اعتبارسنجی ${actual?'':'و قواعد بودجه‌ریزی '}بررسی شوند.${actual?'':' فرم‌های فعلی شما تغییری نمی‌کند؛ فایل فقط به‌صورت پیش‌نویس یا درخواست در گردش تصویب ثبت می‌شود.'}</div><div class="actions" style="justify-content:flex-start;margin:12px 0"><button class="btn" onclick="impSample()">دانلود نمونه اکسل</button></div><div class="field"><label>بارگذاری فایل (xlsx، xls یا csv)</label><input type="file" accept=".xlsx,.xls,.csv" onchange="impFile(this.files[0])"></div><p id="impMsg" class="small ${IMP.msg&&/CSV/.test(IMP.msg)?'error':'muted'}">${esc(IMP.msg||'')}</p>${res}${!actual&&window.subBlocked&&subBlocked()?'<div class="notice" style="margin-top:12px;background:#fff4da">یک بودجه در گردش تصویب دارید؛ تا حذف یا تصویب آن، فقط ذخیره پیش‌نویس ممکن است.</div>':''}${hist()}`,foot);
   document.querySelector('#modal .modal').style.width='min(860px,100%)';syncBtns();
 }
 window.impApply=mode=>{
@@ -337,7 +337,7 @@ window.checkBudget=()=>sendCheckModal(S.rows,{name:'بودجه ۱۴۰۶ (از ف
 /* ---------- ماژول عملکرد واقعی ---------- */
 pages.actual=()=>{
   const y=S.ay,f=S.af,rows=adata(y)[f],filled=months.map((_,i)=>rows.some(r=>r.values[i]!=null)).filter(Boolean).length;
-  return `${heading('ایجاد عملکرد جدید','ثبت عملکرد محقق‌شده دانا به تفکیک سال · واحد: میلیون تومان',`<div class="actions"><button class="btn" onclick="importModal('actual')">ورود از اکسل</button><button class="btn" onclick="syncModal()">همگام‌سازی با راهکاران</button></div>`)}
+  return `${heading('ایجاد عملکرد جدید','ثبت عملکرد محقق‌شده دانا به تفکیک سال · واحد: میلیون ریال',`<div class="actions"><button class="btn" onclick="importModal('actual')">ورود از اکسل</button><button class="btn" onclick="syncModal()">همگام‌سازی با راهکاران</button></div>`)}
   <div class="card ${fcls(f)}"><div class="filters" style="align-items:flex-end"><div class="field" style="margin:0"><label>سال</label><select onchange="S.ay=Number(this.value);save();render()">${YEARS.map(x=>`<option value="${x}" ${x===y?'selected':''}>${fa(x)}</option>`).join('')}</select></div></div>
   <div class="tabs">${FORMS.map(x=>`<button class="${f===x?'active':''}" onclick="set('af','${x}')">${x}</button>`).join('')}</div>
   <div class="spread"><div><h2>عملکرد محقق‌شده ${f} · سال ${fa(y)}</h2><p class="muted small">${num(rows.length)} ردیف · داده ${num(filled)} ماه از ۱۲ ماه</p></div><button class="btn primary" onclick="aRowModal()">＋ تعریف ردیف</button></div>
@@ -353,7 +353,7 @@ window.aAddRow=()=>{
 };
 window.aEdit=i=>{
   const r=adata(S.ay)[S.af][i];if(!r)return;
-  modal('ویرایش ردیف عملکرد',`<p class="muted">${esc(S.af)} · ${esc(r.name)} · سال ${fa(S.ay)} · میلیون تومان</p><div class="entry-grid">${months.map((m,j)=>`<div class="field"><label>${m}</label><input type="number" min="0" step="any" id="aEd${j}" value="${r.values[j]==null?'':r.values[j]}"></div>`).join('')}</div><p id="aErr" class="error"></p>`,`<button class="btn" onclick="aDel(${i})">حذف ردیف</button><button class="btn" onclick="closeModal()">انصراف</button><button class="btn primary" onclick="aSave(${i})">ثبت</button>`);
+  modal('ویرایش ردیف عملکرد',`<p class="muted">${esc(S.af)} · ${esc(r.name)} · سال ${fa(S.ay)} · میلیون ریال</p><div class="entry-grid">${months.map((m,j)=>`<div class="field"><label>${m}</label><input type="number" min="0" step="any" id="aEd${j}" value="${r.values[j]==null?'':r.values[j]}"></div>`).join('')}</div><p id="aErr" class="error"></p>`,`<button class="btn" onclick="aDel(${i})">حذف ردیف</button><button class="btn" onclick="closeModal()">انصراف</button><button class="btn primary" onclick="aSave(${i})">ثبت</button>`);
 };
 window.aSave=i=>{
   const vals=[];
@@ -365,7 +365,7 @@ window.aDel=i=>{if(!confirm('این ردیف حذف شود؟'))return;adata(S.ay
 /* ---------- همگام‌سازی با راهکاران (نمایشی) ---------- */
 window.syncModal=()=>modal('همگام‌سازی با راهکاران',`<p class="muted">راهکاران سیستم · سپیدار</p><div class="notice" style="margin:14px 0">اتصال وب‌سرویس، مجوز و نگاشت حساب‌ها هنوز فراهم نشده است. در این نمونه، همگام‌سازی فقط ردیف‌های فرضی با برچسب «راهکاران (نمونه)» برای سال انتخاب‌شده می‌سازد؛ هیچ داده واقعی دریافت نمی‌شود.</div><div class="field"><label>سال</label><select id="syncYear">${YEARS.map(x=>`<option value="${x}" ${x===S.ay?'selected':''}>${fa(x)}</option>`).join('')}</select></div><p class="small">وضعیت: ${S.syncAt?'آخرین همگام‌سازی نمایشی: '+esc(S.syncAt):'متصل نیست'}</p>`,`<button class="btn" onclick="closeModal()">انصراف</button><button class="btn primary" onclick="syncDemo()">شبیه‌سازی همگام‌سازی</button>`);
 window.syncDemo=()=>{
-  const y=Number($('syncYear').value),d=adata(y),last=y===1406?6:12;
+  const y=Number($('syncYear').value),d=adata(y),last=12;
   SAMPLE.forEach(([f,n,v],k)=>{
     const vals=months.map((_,m)=>m<last?Math.round(v[m]*(.88+((Math.sin((k+1)*(m+3)*(y%97))+1)/2)*.24)):null);
     const ex=d[f].find(x=>x.name===n);

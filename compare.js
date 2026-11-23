@@ -8,6 +8,8 @@ const sg=n=>n>0?'+'+R(n):n<0?'−'+R(-n):R(0);
 const pcs=p=>p==null||!Number.isFinite(p)?'—':(p>0?'+':p<0?'−':'')+num(Math.round(Math.abs(p)*100))+'٪';
 const cp=Object.assign({items:[],confirmed:false,py:1406,pt:'B',msg:'',metric:'درآمد',period:'ماهانه',adj:false,rate:40,company:'همه',common:true,base:'',cmpI:'',ddc:null,ddn:null},S.cmp);
 S.cmp=cp;
+cp.items=cp.items.filter(k=>!(k.endsWith(':A')&&Number(k.split(':')[0])>1405));
+if(cp.pt==='A'&&cp.py>1405)cp.py=1405;
 if(cp.v!==2){cp.items=[];cp.confirmed=false;cp.base='';cp.cmpI='';cp.ddc=null;cp.ddn=null;cp.v=2}
 const holding=()=>S.scope==='holding';
 const lbl=k=>{const [y,t]=k.split(':');return (t==='B'?'بودجه ':'عملکرد ')+fa(y)};
@@ -19,6 +21,7 @@ function typeNames(f){const s=new Set(HB.fieldNames(f));const sub=sentSub();if(s
 // داده یک مورد (سال و بودجه/عملکرد) برای یک شرکت
 function leaf(y,t,c){
   const map={},avail=Array(12).fill(false);let syn=false,has=false;
+  if(t==='A'&&y>1405)return {map,avail,syn,has}; // عملکرد محقق‌شده فقط تا ۱۴۰۵ وجود دارد
   const synth=(fn,n12)=>{['درآمد','هزینه'].forEach(f=>typeNames(f).forEach(n=>{map[f+'|'+n]=fn(f,n).map(v=>Number(v)||0)}));for(let m=0;m<n12;m++)avail[m]=true;syn=true;has=true;
     if(c!=='دانا'){ // نسبت هزینه به درآمد نمونه‌ها واقع‌بینانه شود (حاشیه سود حدود ۲۰ تا ۵۰ درصد)
       const tot=f=>Object.entries(map).filter(([k])=>k.startsWith(f+'|')).reduce((a,[,v])=>a+v.reduce((x,y)=>x+y,0),0);
@@ -79,7 +82,7 @@ const plabels=p=>p==='ماهانه'?months:p==='فصلی'?QN:p==='نیم‌سا�
 
 /* ---------- رابط ---------- */
 const opt=(l,v)=>l.map(x=>`<option ${x===v?'selected':''}>${esc(x)}</option>`).join('');
-window.cmpSet=(k,v)=>{cp[k]=v;if(['metric','company','common','adj','rate'].includes(k)){cp.ddc=null;cp.ddn=null}save();render()};
+window.cmpSet=(k,v)=>{cp[k]=v;if(k==='pt'&&v==='A'&&cp.py>1405)cp.py=1405;if(['metric','company','common','adj','rate'].includes(k)){cp.ddc=null;cp.ddn=null}save();render()};
 const resetDd=()=>{cp.base='';cp.cmpI='';cp.ddc=null;cp.ddn=null};
 window.cmpAdd=()=>{
   const key=cp.py+':'+cp.pt;
@@ -94,7 +97,7 @@ function selectionCard(){
   const chips=cp.items.map(k=>{const it=item(k);return `<span class="chip"><span class="dot" style="background:${YCOL[k.split(':')[0]]}"></span>${lbl(k)}${it.syn?' <small class="muted">(نمونه)</small>':''}<button onclick="cmpRemove('${k}')" title="حذف">✕</button></span>`}).join('');
   return `<div class="card"><h2>انتخاب موارد مقایسه</h2><p class="muted small">سال و نوع را انتخاب و اضافه کنید؛ برای مقایسه چند مورد، این کار را تکرار کنید. نمونه‌ی فرضی برای سال‌ها و شرکت‌هایی است که داده‌ی واقعی در سامانه ندارند.</p>
   <div class="filters" style="align-items:flex-end">
-    <div class="field" style="margin:0"><label>سال</label><select onchange="cmpSet('py',Number(this.value))">${YEARS.map(y=>`<option value="${y}" ${cp.py===y?'selected':''}>${fa(y)}</option>`).join('')}</select></div>
+    <div class="field" style="margin:0"><label>سال</label><select onchange="cmpSet('py',Number(this.value))">${YEARS.filter(y=>cp.pt==='B'||y<=1405).map(y=>`<option value="${y}" ${cp.py===y?'selected':''}>${fa(y)}</option>`).join('')}</select></div>
     <div class="field" style="margin:0"><label>بودجه یا عملکرد</label><select onchange="cmpSet('pt',this.value)"><option value="B" ${cp.pt==='B'?'selected':''}>بودجه</option><option value="A" ${cp.pt==='A'?'selected':''}>عملکرد</option></select></div>
     <button class="btn" onclick="cmpAdd()">＋ افزودن به مقایسه</button>
   </div>
@@ -137,7 +140,7 @@ function resultCard(){
   const diffRows=keys.slice(1).map((k,i)=>`<tr class="stsum"><td>تفاوت «${lbl(k)}» با «${lbl(keys[0])}»</td>${q[i+1].map((v,m)=>dcell(v,q[0][m])).join('')}${dcell(tot[i+1],tot[0])}</tr>`).join('');
   const mon=mask?months.filter((_,i)=>mask[i]):null;
   return `<div class="card" style="margin-top:18px"><h2>نتیجه مقایسه ${cp.metric==='ترکیبی'?'· سود/زیان ناخالص':isM()?'· حاشیه سود':'· '+cp.metric}</h2>
-  <p class="muted small">${isM()?'درصد (سود/زیان ناخالص ÷ درآمد)':'میلیون تومان'}${cp.adj?` · تعدیل‌شده با نرخ ${num(cp.rate)}٪ به قیمت سال ${fa(baseYear())}`:''}${mon?` · ماه‌های مشترک: ${mon.length?esc(mon[0])+' تا '+esc(mon[mon.length-1]):'ندارد'}`:''} · خط‌چین: بودجه · خط ممتد: عملکرد</p>
+  <p class="muted small">${isM()?'درصد (سود/زیان ناخالص ÷ درآمد)':'میلیون ریال'}${cp.adj?` · تعدیل‌شده با نرخ ${num(cp.rate)}٪ به قیمت سال ${fa(baseYear())}`:''}${mon?` · ماه‌های مشترک: ${mon.length?esc(mon[0])+' تا '+esc(mon[mon.length-1]):'ندارد'}`:''} · خط‌چین: بودجه · خط ممتد: عملکرد</p>
   ${chart}
   <div class="tablewrap" style="margin-top:16px"><table><thead><tr><th>مورد</th>${QN.map(x=>`<th>${x}</th>`).join('')}<th>جمع</th></tr></thead><tbody>${rows}${diffRows}</tbody></table></div></div>`;
 }
@@ -209,6 +212,7 @@ window.cmpPage=()=>{
   if(!window.HB)return '<div class="empty">در حال بارگذاری…</div>';
   return `${heading('تحلیل و مقایسه','مقایسه بودجه و عملکرد سال‌ها، تعدیل و ریزشدن علت اختلاف')}${selectionCard()}${cp.confirmed&&cp.items.length?resultCard()+drillCard():''}`;
 };
+window.CMP={leaf};
 pages.variance=cmpPage;pages.compare=cmpPage;
 render();
 })();
