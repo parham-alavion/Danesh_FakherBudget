@@ -76,13 +76,18 @@ window.seedDemo=()=>{
     [1404,1405].forEach(y=>{const dd=S.actData[y]=S.actData[y]||{};FORMS.forEach(f=>dd[f]=dd[f]||[]);
       if(!FORMS.some(f=>dd[f].length)){FORMS.forEach(f=>DEMO[f].forEach(([name],k)=>dd[f].push({name,values:HB.bud('دانا',y,f,name).map((x,m)=>Math.round(x*((f==='هزینه'?1.05:.96)+.08*Math.sin(k+m+y%7)))),src:'نمونه'})))}});
   }
-  S.demoSeed=true;save();render();
+  if(!S.drafts.some(x=>x.demo)&&window.createDraft){
+    createDraft('پیش‌نویس بودجه ۱۴۰۶ (نمونه)','نمونه',rows);S.drafts[0].demo=true;
+    S.drafts[0].msg='پیش‌نویس نمونه برای نمایش.';
+  }
+  S.demoSeed=true;S.demoDismissed=false;save();render();
 };
 window.clearDemo=()=>{
   S.subs=S.subs.filter(x=>!x.demo);
   const c=S.subs.find(x=>x.status!=='حذف‌شده');S.status=c?c.status:'پیش‌نویس';
   if(S.actData){Object.keys(S.actData).forEach(y=>FORMS.forEach(f=>{S.actData[y][f]=(S.actData[y][f]||[]).filter(r=>r.src!=='نمونه')}));S.demoActual=false}
-  S.demoSeed=false;save();render();
+  S.drafts=S.drafts.filter(x=>!x.demo);
+  S.demoSeed=false;S.demoDismissed=true;save();render();
 };
 
 /* ---------- امتیاز ستاره‌ای شرکت در میان شرکت‌های هلدینگ ---------- */
@@ -192,5 +197,7 @@ window.companyDashboard=()=>{
   <div class="card"><div class="spread"><div><h2>بودجه ۱۴۰۵ و محقق‌شده ۱۴۰۵</h2><p class="muted small">${dm==='حاشیه سود'?'درصد':'میلیون ریال'} · خط‌چین: بودجه ۱۴۰۵ (نمونه فرضی) · خط ممتد: محقق‌شده ۱۴۰۵</p></div>
   <div class="field" style="margin:0"><label>چه چیزی مقایسه شود؟</label><select onchange="set('dashMetric',this.value)">${['درآمد','هزینه','سود/زیان ناخالص','حاشیه سود'].map(x=>`<option ${dm===x?'selected':''}>${x}</option>`).join('')}</select></div></div>${c2}</div>`;
 };
+/* بار اول (وقتی هیچ داده‌ای نیست) داده نمونه خودکار بارگذاری می‌شود تا برنامه خالی نباشد */
+if(!S.demoSeed&&!S.demoDismissed&&!S.subs.length&&!S.drafts.length&&!['درآمد','هزینه','نقدینگی'].some(f=>S.rows[f].length)&&!Object.values(S.actData||{}).some(d=>['درآمد','هزینه','نقدینگی'].some(f=>(d[f]||[]).length)))seedDemo();
 render();
 })();
